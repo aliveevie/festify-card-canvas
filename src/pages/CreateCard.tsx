@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useSwitchChain } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import { Header } from "@/components/Header";
+import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -209,6 +210,11 @@ export default function CreateCard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <SEOHead 
+        title="Create Greeting Card - Festify"
+        description="Design and mint personalized NFT greeting cards for any festival. Choose from 8+ themes, customize your message, and send across multiple blockchains."
+        url="https://www.festify.club/create"
+      />
       <Header />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-6xl mx-auto">
