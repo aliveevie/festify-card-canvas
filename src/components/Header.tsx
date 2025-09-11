@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,9 +60,9 @@ export const Header = () => {
             <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
               Dashboard
             </a>
-            <a href="#create" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/create" className="text-foreground hover:text-primary transition-colors">
               Create Card
-            </a>
+            </Link>
             <a href="#collection" className="text-foreground hover:text-primary transition-colors">
               My Collection
             </a>
@@ -159,9 +160,9 @@ export const Header = () => {
             <a href="#dashboard" className="block text-foreground hover:text-primary transition-colors">
               Dashboard
             </a>
-            <a href="#create" className="block text-foreground hover:text-primary transition-colors">
+            <Link to="/create" className="block text-foreground hover:text-primary transition-colors">
               Create Card
-            </a>
+            </Link>
             <a href="#collection" className="block text-foreground hover:text-primary transition-colors">
               My Collection
             </a>

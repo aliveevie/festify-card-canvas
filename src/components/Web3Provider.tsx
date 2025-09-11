@@ -13,7 +13,8 @@ createWeb3Modal({
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
   enableOnramp: true, // Optional - false as default
-  themeMode: 'light'
+  themeMode: 'light',
+  defaultChain: config.chains[1], // Default to Celo instead of Ethereum
 })
 
 interface Web3ProviderProps {

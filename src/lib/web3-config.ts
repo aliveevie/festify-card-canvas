@@ -1,6 +1,6 @@
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 import { cookieStorage, createStorage } from 'wagmi'
-import { celo, base, optimism } from 'wagmi/chains'
+import { mainnet, celo, base, optimism } from 'wagmi/chains'
 import type { Chain } from 'wagmi/chains'
 
 // Get projectId from WalletConnect Cloud
@@ -33,7 +33,7 @@ const liskChain: Chain = {
 
 // Create wagmi config
 export const config = defaultWagmiConfig({
-  chains: [celo, base, optimism, liskChain],
+  chains: [mainnet, celo, base, optimism, liskChain],
   projectId,
   metadata,
   ssr: true,

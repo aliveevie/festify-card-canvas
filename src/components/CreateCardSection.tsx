@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -211,30 +212,17 @@ export const CreateCardSection = () => {
 
             {/* Action Buttons */}
             <div className="mt-8 space-y-4">
-              {isConnected ? (
-                <>
-                  <Button className="btn-hero w-full text-lg py-4">
-                    <Send className="h-5 w-5 mr-2" />
-                    Mint & Send Card
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                  
-                  <div className="text-center text-sm text-muted-foreground">
-                    Network: {currentNetwork?.name} • Estimated fee: ~$0.50 USD
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Button onClick={connect} className="btn-hero w-full text-lg py-4">
-                    <Wallet className="h-5 w-5 mr-2" />
-                    Connect Wallet to Continue
-                  </Button>
-                  
-                  <div className="text-center text-sm text-muted-foreground">
-                    Connect your wallet to start creating greeting cards
-                  </div>
-                </>
-              )}
+              <Link to="/create">
+                <Button className="btn-hero w-full text-lg py-4">
+                  <Send className="h-5 w-5 mr-2" />
+                  Create Your Card
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+              
+              <div className="text-center text-sm text-muted-foreground">
+                Click to start creating your personalized greeting card
+              </div>
             </div>
           </div>
         </div>
