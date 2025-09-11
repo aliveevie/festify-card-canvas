@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WalletStatus } from "@/components/WalletStatus";
 import { useAccount } from 'wagmi';
+import { Link } from "react-router-dom";
 import { 
   Sparkles, 
   Send, 
@@ -52,21 +53,17 @@ export const HeroSection = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {isConnected ? (
+              <Link to="/create">
                 <Button className="btn-hero text-lg px-8 py-4">
-                  <Send className="h-5 w-5 mr-2" />
-                  Create Your First Card
-                </Button>
-              ) : (
-                <Button className="btn-hero text-lg px-8 py-4" onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}>
                   <Send className="h-5 w-5 mr-2" />
                   Get Started
                 </Button>
-              )}
+              </Link>
               
               <Button 
                 variant="outline" 
                 className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4"
+                onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
               >
                 <Globe className="h-5 w-5 mr-2" />
                 Explore Gallery

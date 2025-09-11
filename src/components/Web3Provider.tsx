@@ -11,8 +11,8 @@ const queryClient = new QueryClient()
 createWeb3Modal({
   wagmiConfig: config,
   projectId,
-  enableAnalytics: true, // Optional - defaults to your Cloud configuration
-  enableOnramp: true, // Optional - false as default
+  enableAnalytics: false, // Disable analytics to prevent API errors
+  enableOnramp: false, // Disable onramp to prevent API errors
   themeMode: 'light',
   defaultChain: config.chains[1], // Default to Celo instead of Ethereum
 })

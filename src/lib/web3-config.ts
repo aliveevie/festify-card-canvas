@@ -4,12 +4,12 @@ import { mainnet, celo, base, optimism } from 'wagmi/chains'
 import type { Chain } from 'wagmi/chains'
 
 // Get projectId from WalletConnect Cloud
-export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || 'demo-project-id'
+export const projectId = import.meta.env.VITE_PROJECT_ID || '504a7aec6fe71640750033fd6999d65c'
 
 const metadata = {
   name: 'Festify',
   description: 'Cross-Chain Greeting Card NFTs',
-  url: 'https://festify.com', // your app URL
+  url: import.meta.env.DEV ? 'http://localhost:8080' : 'https://www.festify.club', // your app URL
   icons: ['/lovable-uploads/c098babc-78fa-4925-88df-3c53fa0f1f10.png']
 }
 
