@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useSwitchChain } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
+import { useAccount, useWaitForTransactionReceipt, useReadContract, useSwitchChain } from 'wagmi';
+import { parseEther, formatEther, createWalletClient, custom, encodeFunctionData } from 'viem';
+import { getReferralTag, submitReferral } from '@divvi/referral-sdk';
 import { Header } from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,9 @@ import {
 } from "lucide-react";
 import { NETWORKS, type NetworkKey } from "@/lib/web3-config";
 import { abi } from "@/networks/abi.json";
+
+// Divvi consumer address for referral tracking
+const DIVVI_CONSUMER_ADDRESS = '0x4eA48e01F1314Db0925653e30617B254D1cf5366';
 
 const festivals = [
   { id: 'christmas', name: 'Christmas', emoji: '🎄', color: 'bg-red-500' },
@@ -88,13 +92,40 @@ export default function CreateCard() {
     chainId: NETWORKS[selectedNetwork].id,
   });
 
-  // Write contract
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  // Transaction state
+  const [hash, setHash] = useState<`0x${string}` | undefined>();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Wait for transaction
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+
+  // Submit referral to Divvi after successful transaction
+  useEffect(() => {
+    const submitDivviReferral = async () => {
+      if (isSuccess && hash && address) {
+        try {
+          // Get the chain ID of the network where the transaction was sent
+          const chainId = NETWORKS[selectedNetwork].id;
+          
+          // Submit the referral to Divvi for tracking
+          await submitReferral({
+            txHash: hash,
+            chainId: chainId,
+          });
+          
+          console.log('Divvi referral submitted successfully:', { txHash: hash, chainId });
+        } catch (error) {
+          console.error('Failed to submit Divvi referral:', error);
+          // Don't show error to user as this doesn't affect the main functionality
+        }
+      }
+    };
+
+    submitDivviReferral();
+  }, [isSuccess, hash, selectedNetwork, address]);
 
   // Generate metadata URI (simplified for demo)
   useEffect(() => {
@@ -149,6 +180,9 @@ export default function CreateCard() {
     }
 
     try {
+      setIsPending(true);
+      setError(null);
+      
       // Switch to selected network if needed
       if (chainId !== NETWORKS[selectedNetwork].id) {
         try {
@@ -157,6 +191,7 @@ export default function CreateCard() {
           await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (switchError) {
           console.error('Network switch failed:', switchError);
+          setIsPending(false);
           toast({
             title: "Network Switch Failed",
             description: `Please manually switch to ${NETWORKS[selectedNetwork].name} in your wallet.`,
@@ -170,16 +205,43 @@ export default function CreateCard() {
         ? customMessage 
         : selectedTemplate.preview;
 
-      writeContract({
-        address: contractAddress as `0x${string}`,
+      // Create wallet client for direct transaction sending
+      const walletClient = createWalletClient({
+        chain: NETWORKS[selectedNetwork].chain,
+        transport: custom((window as any).ethereum),
+      });
+
+      // Generate Divvi referral tag for tracking
+      const referralTag = getReferralTag({
+        user: address as `0x${string}`, // The user address making the transaction
+        consumer: DIVVI_CONSUMER_ADDRESS as `0x${string}`, // Your Divvi Identifier
+      });
+
+      // Encode the contract function call
+      const contractData = encodeFunctionData({
         abi: abi,
         functionName: 'mintGreetingCard',
         args: [recipient as `0x${string}`, metadataURI, selectedFestival.name],
-        value: mintFee || 0n, // Use contract fee or 0 if not available
-        chainId: NETWORKS[selectedNetwork].id,
       });
+
+      // Append the referral tag to the contract data (this is the key step!)
+      const txData = contractData + referralTag;
+
+      // Send transaction with Divvi referral tag included in data
+      const txHash = await walletClient.sendTransaction({
+        account: address as `0x${string}`,
+        to: contractAddress as `0x${string}`,
+        data: txData as `0x${string}`,
+        value: (mintFee && typeof mintFee === 'bigint' ? mintFee : 0n),
+        kzg: undefined,
+      } as any);
+
+      setHash(txHash);
+      setIsPending(false);
     } catch (err) {
       console.error('Error minting card:', err);
+      setIsPending(false);
+      setError(err as Error);
       toast({
         title: "Transaction Failed",
         description: "Failed to mint greeting card. Please try again.",
@@ -272,9 +334,9 @@ export default function CreateCard() {
                   <div className="flex items-center justify-between text-sm mt-2">
                     <span>Mint Fee:</span>
                     <span className="font-mono">
-                      {isLoadingFee ? (
+                        {isLoadingFee ? (
                         <span className="text-muted-foreground">Loading...</span>
-                      ) : mintFee ? (
+                      ) : mintFee && typeof mintFee === 'bigint' ? (
                         `${formatEther(mintFee)} ${NETWORKS[selectedNetwork].currency}`
                       ) : (
                         <span className="text-green-600">Free</span>
@@ -478,7 +540,7 @@ export default function CreateCard() {
                     
                     <div className="text-center text-sm text-muted-foreground">
                       Network: {NETWORKS[selectedNetwork].name} • 
-                      Fee: {isLoadingFee ? 'Loading...' : mintFee ? `${formatEther(mintFee)} ${NETWORKS[selectedNetwork].currency}` : 'Free'}
+                      Fee: {isLoadingFee ? 'Loading...' : mintFee && typeof mintFee === 'bigint' ? `${formatEther(mintFee)} ${NETWORKS[selectedNetwork].currency}` : 'Free'}
                     </div>
                   </>
                 ) : (
