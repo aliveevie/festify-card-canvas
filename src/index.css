@@ -2,41 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Festify Design System - Professional blockchain greeting card platform
+All colors MUST be HSL. Based on Festify blue logo with festive accents.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors - Clean, modern background */
+    --background: 249 250% 98%;
+    --foreground: 220 18% 15%;
 
+    /* Card system - Elevated surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 18% 15%;
 
+    /* Popover system */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 18% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Festify Blue from logo */
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 210 100% 48%;
+    --primary-light: 210 100% 94%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Warm festive accent */
+    --secondary: 45 100% 96%;
+    --secondary-foreground: 220 18% 15%;
+    --secondary-accent: 45 100% 55%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted colors */
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Festival gold */
+    --accent: 45 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 45 100% 94%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status colors - Blockchain themed */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Network colors - For multi-chain support */
+    --network-celo: 52 100% 48%;
+    --network-base: 221 83% 53%;
+    --network-optimism: 0 100% 50%;
+    --network-lisk: 262 83% 58%;
 
-    --radius: 0.5rem;
+    /* Interactive elements */
+    --border: 220 15% 90%;
+    --input: 220 15% 95%;
+    --ring: 210 100% 56%;
+
+    /* Gradients - Beautiful festive gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 56%), hsl(262 83% 58%));
+    --gradient-festive: linear-gradient(135deg, hsl(45 100% 55%), hsl(0 100% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 56%) 0%, hsl(262 83% 58%) 50%, hsl(45 100% 55%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 15% 98%));
+
+    /* Shadows - Elegant depth */
+    --shadow-sm: 0 1px 2px hsl(220 15% 15% / 0.05);
+    --shadow-md: 0 4px 6px hsl(220 15% 15% / 0.07), 0 2px 4px hsl(220 15% 15% / 0.06);
+    --shadow-lg: 0 10px 15px hsl(220 15% 15% / 0.1), 0 4px 6px hsl(220 15% 15% / 0.05);
+    --shadow-glow: 0 0 20px hsl(210 100% 56% / 0.3);
+    --shadow-festive: 0 8px 32px hsl(45 100% 55% / 0.2);
+
+    /* Animation timings */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +96,56 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Base colors - Dark theme */
+    --background: 220 18% 8%;
+    --foreground: 249 250% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Card system - Dark elevated surfaces */
+    --card: 220 18% 10%;
+    --card-foreground: 249 250% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Popover system - Dark */
+    --popover: 220 18% 10%;
+    --popover-foreground: 249 250% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary - Bright Festify Blue for dark theme */
+    --primary: 210 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 210 100% 65%;
+    --primary-light: 210 100% 15%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Warm dark accent */
+    --secondary: 45 40% 12%;
+    --secondary-foreground: 249 250% 98%;
+    --secondary-accent: 45 100% 65%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Muted colors - Dark */
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 15% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - Bright festival gold for dark */
+    --accent: 45 100% 65%;
+    --accent-foreground: 220 18% 8%;
+    --accent-light: 45 100% 15%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status colors - Dark theme variants */
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Interactive elements - Dark */
+    --border: 220 15% 18%;
+    --input: 220 15% 12%;
+    --ring: 210 100% 60%;
+
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%), hsl(262 83% 65%));
+    --gradient-festive: linear-gradient(135deg, hsl(45 100% 65%), hsl(0 100% 75%));
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(262 83% 65%) 50%, hsl(45 100% 65%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 18% 10%), hsl(220 18% 12%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -101,5 +164,128 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Festive Button Variants */
+  .btn-hero {
+    @apply bg-gradient-to-r from-primary via-accent to-primary-hover text-primary-foreground px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-glow transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-festive {
+    @apply bg-gradient-to-r from-accent to-accent-light text-accent-foreground px-6 py-3 rounded-lg font-medium shadow-md hover:shadow-festive transition-all duration-300;
+  }
+
+  .btn-network {
+    @apply bg-card border border-border hover:border-primary text-card-foreground px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md;
+  }
+
+  /* Card Styles */
+  .card-elevated {
+    @apply bg-card border border-border rounded-xl shadow-md hover:shadow-lg transition-all duration-300;
+  }
+
+  .card-festive {
+    @apply bg-gradient-to-br from-card to-accent-light/10 border border-accent/20 rounded-xl shadow-lg hover:shadow-festive transition-all duration-300;
+  }
+
+  .card-greeting {
+    @apply bg-gradient-to-br from-card via-primary-light/5 to-accent-light/5 border border-primary/20 rounded-xl shadow-lg hover:shadow-glow transition-all duration-300 hover:scale-105;
+  }
+
+  /* Network Status Indicators */
+  .network-indicator {
+    @apply w-3 h-3 rounded-full animate-pulse;
+  }
+
+  .network-celo {
+    @apply bg-[hsl(var(--network-celo))];
+  }
+
+  .network-base {
+    @apply bg-[hsl(var(--network-base))];
+  }
+
+  .network-optimism {
+    @apply bg-[hsl(var(--network-optimism))];
+  }
+
+  .network-lisk {
+    @apply bg-[hsl(var(--network-lisk))];
+  }
+
+  /* Text Gradients */
+  .text-gradient-hero {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+  }
+
+  .text-gradient-festive {
+    @apply bg-gradient-to-r from-accent to-destructive bg-clip-text text-transparent;
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@layer utilities {
+  /* Custom Gradients */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-festive {
+    background: var(--gradient-festive);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  /* Custom Shadows */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-festive {
+    box-shadow: var(--shadow-festive);
+  }
+
+  /* Transitions */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+}
+
+/* Keyframe Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.6);
   }
 }
