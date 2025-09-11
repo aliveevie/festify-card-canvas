@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAccount } from 'wagmi';
+import { useWallet } from "@/hooks/useWallet";
 import { 
   Gift, 
   Heart, 
@@ -12,7 +14,8 @@ import {
   Send,
   Calendar,
   Users,
-  ChevronRight
+  ChevronRight,
+  Wallet
 } from "lucide-react";
 
 const festivals = [
@@ -54,6 +57,9 @@ export const CreateCardSection = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
   const [customMessage, setCustomMessage] = useState("");
   const [recipient, setRecipient] = useState("");
+  
+  const { isConnected } = useAccount();
+  const { connect, currentNetwork } = useWallet();
 
   return (
     <section className="py-24 bg-muted/30">
@@ -205,15 +211,30 @@ export const CreateCardSection = () => {
 
             {/* Action Buttons */}
             <div className="mt-8 space-y-4">
-              <Button className="btn-hero w-full text-lg py-4">
-                <Send className="h-5 w-5 mr-2" />
-                Mint & Send Card
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                Estimated fee: ~$0.50 USD
-              </div>
+              {isConnected ? (
+                <>
+                  <Button className="btn-hero w-full text-lg py-4">
+                    <Send className="h-5 w-5 mr-2" />
+                    Mint & Send Card
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                  
+                  <div className="text-center text-sm text-muted-foreground">
+                    Network: {currentNetwork?.name} • Estimated fee: ~$0.50 USD
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Button onClick={connect} className="btn-hero w-full text-lg py-4">
+                    <Wallet className="h-5 w-5 mr-2" />
+                    Connect Wallet to Continue
+                  </Button>
+                  
+                  <div className="text-center text-sm text-muted-foreground">
+                    Connect your wallet to start creating greeting cards
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
