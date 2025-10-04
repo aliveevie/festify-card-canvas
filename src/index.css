@@ -3,44 +3,44 @@
 @tailwind utilities;
 
 /* Festify Design System - Professional blockchain greeting card platform
-All colors MUST be HSL. Based on Festify blue logo with festive accents.
+All colors MUST be HSL. Based on premium gold color palette for luxury Web3 experience.
 */
 
 @layer base {
   :root {
     /* Base colors - Clean, modern background */
-    --background: 249 250% 98%;
-    --foreground: 220 18% 15%;
+    --background: 0 0% 100%;
+    --foreground: 30 15% 8%;
 
     /* Card system - Elevated surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 220 18% 15%;
+    --card-foreground: 30 15% 8%;
 
     /* Popover system */
     --popover: 0 0% 100%;
-    --popover-foreground: 220 18% 15%;
+    --popover-foreground: 30 15% 8%;
 
-    /* Primary - Festify Blue from logo */
-    --primary: 210 100% 56%;
+    /* Primary - Premium Gold (#E3A83E) */
+    --primary: 42 75% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 100% 48%;
-    --primary-light: 210 100% 94%;
+    --primary-hover: 42 75% 48%;
+    --primary-light: 42 75% 94%;
 
-    /* Secondary - Warm festive accent */
-    --secondary: 45 100% 96%;
-    --secondary-foreground: 220 18% 15%;
-    --secondary-accent: 45 100% 55%;
+    /* Secondary - Rich Brown (#866221) */
+    --secondary: 42 60% 30%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-accent: 42 60% 40%;
 
     /* Muted colors */
-    --muted: 220 15% 96%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 42 20% 96%;
+    --muted-foreground: 42 15% 45%;
 
-    /* Accent - Festival gold */
-    --accent: 45 100% 55%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 45 100% 94%;
+    /* Accent - Light Gold (#FBD3A3) */
+    --accent: 42 85% 80%;
+    --accent-foreground: 30 15% 8%;
+    --accent-light: 42 85% 95%;
 
-    /* Status colors - Blockchain themed */
+    /* Status colors - Premium themed */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -55,22 +55,22 @@ All colors MUST be HSL. Based on Festify blue logo with festive accents.
     --network-lisk: 262 83% 58%;
 
     /* Interactive elements */
-    --border: 220 15% 90%;
-    --input: 220 15% 95%;
-    --ring: 210 100% 56%;
+    --border: 42 20% 90%;
+    --input: 42 20% 95%;
+    --ring: 42 75% 56%;
 
-    /* Gradients - Beautiful festive gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 56%), hsl(262 83% 58%));
-    --gradient-festive: linear-gradient(135deg, hsl(45 100% 55%), hsl(0 100% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 56%) 0%, hsl(262 83% 58%) 50%, hsl(45 100% 55%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 15% 98%));
+    /* Gradients - Premium gold gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(42 75% 56%), hsl(42 60% 30%));
+    --gradient-festive: linear-gradient(135deg, hsl(42 85% 80%), hsl(42 75% 56%));
+    --gradient-hero: linear-gradient(135deg, hsl(42 85% 80%) 0%, hsl(42 75% 56%) 50%, hsl(42 60% 30%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(42 20% 98%));
 
     /* Shadows - Elegant depth */
-    --shadow-sm: 0 1px 2px hsl(220 15% 15% / 0.05);
-    --shadow-md: 0 4px 6px hsl(220 15% 15% / 0.07), 0 2px 4px hsl(220 15% 15% / 0.06);
-    --shadow-lg: 0 10px 15px hsl(220 15% 15% / 0.1), 0 4px 6px hsl(220 15% 15% / 0.05);
-    --shadow-glow: 0 0 20px hsl(210 100% 56% / 0.3);
-    --shadow-festive: 0 8px 32px hsl(45 100% 55% / 0.2);
+    --shadow-sm: 0 1px 2px hsl(30 15% 8% / 0.05);
+    --shadow-md: 0 4px 6px hsl(30 15% 8% / 0.07), 0 2px 4px hsl(30 15% 8% / 0.06);
+    --shadow-lg: 0 10px 15px hsl(30 15% 8% / 0.1), 0 4px 6px hsl(30 15% 8% / 0.05);
+    --shadow-glow: 0 0 20px hsl(42 75% 56% / 0.3);
+    --shadow-festive: 0 8px 32px hsl(42 75% 56% / 0.2);
 
     /* Animation timings */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -97,36 +97,36 @@ All colors MUST be HSL. Based on Festify blue logo with festive accents.
 
   .dark {
     /* Base colors - Dark theme */
-    --background: 220 18% 8%;
-    --foreground: 249 250% 98%;
+    --background: 30 15% 8%;
+    --foreground: 42 85% 95%;
 
     /* Card system - Dark elevated surfaces */
-    --card: 220 18% 10%;
-    --card-foreground: 249 250% 98%;
+    --card: 30 15% 10%;
+    --card-foreground: 42 85% 95%;
 
     /* Popover system - Dark */
-    --popover: 220 18% 10%;
-    --popover-foreground: 249 250% 98%;
+    --popover: 30 15% 10%;
+    --popover-foreground: 42 85% 95%;
 
-    /* Primary - Bright Festify Blue for dark theme */
-    --primary: 210 100% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 100% 65%;
-    --primary-light: 210 100% 15%;
+    /* Primary - Bright Gold for dark theme */
+    --primary: 42 75% 65%;
+    --primary-foreground: 30 15% 8%;
+    --primary-hover: 42 75% 70%;
+    --primary-light: 42 75% 15%;
 
-    /* Secondary - Warm dark accent */
-    --secondary: 45 40% 12%;
-    --secondary-foreground: 249 250% 98%;
-    --secondary-accent: 45 100% 65%;
+    /* Secondary - Rich dark brown */
+    --secondary: 42 60% 15%;
+    --secondary-foreground: 42 85% 95%;
+    --secondary-accent: 42 60% 25%;
 
     /* Muted colors - Dark */
-    --muted: 220 15% 15%;
-    --muted-foreground: 220 15% 65%;
+    --muted: 30 15% 15%;
+    --muted-foreground: 42 15% 65%;
 
-    /* Accent - Bright festival gold for dark */
-    --accent: 45 100% 65%;
-    --accent-foreground: 220 18% 8%;
-    --accent-light: 45 100% 15%;
+    /* Accent - Bright gold for dark */
+    --accent: 42 85% 70%;
+    --accent-foreground: 30 15% 8%;
+    --accent-light: 42 85% 15%;
 
     /* Status colors - Dark theme variants */
     --success: 142 76% 45%;
@@ -137,15 +137,15 @@ All colors MUST be HSL. Based on Festify blue logo with festive accents.
     --destructive-foreground: 0 0% 100%;
 
     /* Interactive elements - Dark */
-    --border: 220 15% 18%;
-    --input: 220 15% 12%;
-    --ring: 210 100% 60%;
+    --border: 30 15% 18%;
+    --input: 30 15% 12%;
+    --ring: 42 75% 65%;
 
     /* Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%), hsl(262 83% 65%));
-    --gradient-festive: linear-gradient(135deg, hsl(45 100% 65%), hsl(0 100% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(262 83% 65%) 50%, hsl(45 100% 65%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 18% 10%), hsl(220 18% 12%));
+    --gradient-primary: linear-gradient(135deg, hsl(42 75% 65%), hsl(42 60% 25%));
+    --gradient-festive: linear-gradient(135deg, hsl(42 85% 70%), hsl(42 75% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(42 85% 70%) 0%, hsl(42 75% 65%) 50%, hsl(42 60% 25%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(30 15% 10%), hsl(30 15% 12%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -232,6 +232,19 @@ All colors MUST be HSL. Based on Festify blue logo with festive accents.
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;
   }
+  
+  .animate-premium-glow {
+    animation: premium-glow 3s ease-in-out infinite;
+  }
+  
+  .animate-premium-float {
+    animation: premium-float 4s ease-in-out infinite;
+  }
+  
+  .animate-gradient-shift {
+    animation: gradient-shift 8s ease-in-out infinite;
+    background-size: 200% 200%;
+  }
 }
 
 @layer utilities {
@@ -287,5 +300,41 @@ All colors MUST be HSL. Based on Festify blue logo with festive accents.
   }
   to {
     box-shadow: 0 0 30px hsl(var(--primary) / 0.6);
+  }
+}
+
+@keyframes premium-glow {
+  0% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5), 0 0 60px hsl(var(--primary) / 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1);
+  }
+}
+
+@keyframes premium-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
