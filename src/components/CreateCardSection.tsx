@@ -20,12 +20,14 @@ import {
 } from "lucide-react";
 
 const festivals = [
+  { id: 'ramadan', name: 'Ramadan', emoji: '🌙', color: 'bg-emerald-500' },
+  { id: 'eid-fitr', name: 'Eid al-Fitr', emoji: '🌙✨', color: 'bg-amber-500' },
+  { id: 'eid-adha', name: 'Eid al-Adha', emoji: '🕌', color: 'bg-green-600' },
   { id: 'christmas', name: 'Christmas', emoji: '🎄', color: 'bg-red-500' },
   { id: 'newyear', name: 'New Year', emoji: '🎊', color: 'bg-purple-500' },
+  { id: 'diwali', name: 'Diwali', emoji: '🪔', color: 'bg-orange-500' },
   { id: 'valentines', name: 'Valentine\'s', emoji: '💝', color: 'bg-pink-500' },
   { id: 'birthday', name: 'Birthday', emoji: '🎂', color: 'bg-yellow-500' },
-  { id: 'diwali', name: 'Diwali', emoji: '🪔', color: 'bg-orange-500' },
-  { id: 'eid', name: 'Eid', emoji: '🌙', color: 'bg-green-500' },
   { id: 'thanksgiving', name: 'Thanksgiving', emoji: '🦃', color: 'bg-amber-600' },
   { id: 'halloween', name: 'Halloween', emoji: '🎃', color: 'bg-orange-600' },
 ];
@@ -63,21 +65,31 @@ export const CreateCardSection = () => {
   const { connect, currentNetwork } = useWallet();
 
   return (
-    <section className="py-24 bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-6 mb-16">
-          <Badge className="bg-accent/10 text-accent border-accent/20 px-4 py-2">
-            <Gift className="h-4 w-4 mr-2" />
-            Create Your Card
-          </Badge>
+    <section className="py-32 bg-gradient-to-b from-muted/20 to-background relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-gradient-to-tr from-accent/5 to-transparent rounded-full blur-3xl" />
+      </div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center space-y-8 mb-20">
+          <div className="inline-flex items-center space-x-3">
+            <Badge className="bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 px-6 py-3 backdrop-blur-sm">
+              <Gift className="h-4 w-4 mr-2" />
+              Premium Card Creator
+            </Badge>
+            <div className="h-1 w-20 bg-gradient-to-r from-primary to-accent rounded-full" />
+          </div>
           
-          <h2 className="text-4xl lg:text-5xl font-bold text-gradient-hero">
-            Design Your Perfect Greeting
+          <h2 className="text-5xl lg:text-6xl font-bold text-gradient-hero leading-tight">
+            Design Your
+            <span className="block text-gradient-festive">Perfect Greeting</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose from 25 festival themes, customize your message, and send memorable 
-            NFT greeting cards to your loved ones.
+          <p className="text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            Choose from 25+ meticulously crafted festival themes, customize your message, 
+            and send memorable NFT greeting cards to your loved ones across multiple blockchains.
           </p>
         </div>
 
@@ -210,18 +222,23 @@ export const CreateCardSection = () => {
               </div>
             </Card>
 
-            {/* Action Buttons */}
-            <div className="mt-8 space-y-4">
+            {/* Premium Action Buttons */}
+            <div className="mt-10 space-y-6">
               <Link to="/create">
-                <Button className="btn-hero w-full text-lg py-4">
-                  <Send className="h-5 w-5 mr-2" />
-                  Create Your Card
-                  <ChevronRight className="h-4 w-4 ml-2" />
+                <Button className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary-hover text-white shadow-2xl hover:shadow-glow transition-all duration-300 hover:scale-105">
+                  <Send className="h-6 w-6 mr-3" />
+                  Create Premium Card
+                  <ChevronRight className="h-5 w-5 ml-3" />
                 </Button>
               </Link>
               
-              <div className="text-center text-sm text-muted-foreground">
-                Click to start creating your personalized greeting card
+              <div className="text-center space-y-2">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Start creating your personalized greeting card
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Premium themes • Multi-chain support • Instant delivery
+                </div>
               </div>
             </div>
           </div>
