@@ -40,68 +40,77 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-xl shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/c098babc-78fa-4925-88df-3c53fa0f1f10.png" 
-              alt="Festify" 
-              className="h-8 w-8"
-            />
-            <span className="text-xl font-bold text-gradient-hero">
-              Festify
-            </span>
-          </div>
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              <img 
+                src="/Transparent Logo.png" 
+                alt="Festify" 
+                className="h-12 w-12 transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-gradient-hero leading-none">
+                Festify
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Premium NFT Cards
+              </span>
+            </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
+          <nav className="hidden lg:flex items-center space-x-1">
+            <a href="#dashboard" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
               Dashboard
             </a>
-            <Link to="/create" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/create" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
               Create Card
             </Link>
-            <a href="#collection" className="text-foreground hover:text-primary transition-colors">
-              My Collection
+            <a href="#collection" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+              Collection
             </a>
-            <a href="#referrals" className="text-foreground hover:text-primary transition-colors">
+            <a href="#referrals" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
               Referrals
             </a>
           </nav>
 
           {/* Network Selector & Wallet */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* Network Selector - Only show when connected */}
             {isConnected && (
               <div className="relative">
                 <Button
-                  variant="ghost"
-                  className="h-9 px-3 text-sm btn-network"
+                  variant="outline"
+                  className="h-10 px-4 text-sm border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                   onClick={() => setIsNetworkOpen(!isNetworkOpen)}
                 >
                   <div className={`network-indicator ${currentNetwork.color} mr-2`} />
-                  <Globe className="h-4 w-4 mr-1" />
-                  {currentNetwork.name}
+                  <Globe className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">{currentNetwork.name}</span>
                   <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
 
                 {/* Network Dropdown */}
                 {isNetworkOpen && (
-                  <Card className="absolute top-full mt-2 right-0 w-48 p-2 z-50 bg-popover border shadow-lg">
-                    <div className="space-y-1">
+                  <Card className="absolute top-full mt-2 right-0 w-56 p-3 z-50 bg-card/95 backdrop-blur-xl border border-border/50 shadow-xl">
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium text-muted-foreground px-2 py-1">Select Network</div>
                       {Object.entries(NETWORKS).map(([key, network]) => (
                         <Button
                           key={key}
                           variant="ghost"
-                          className="w-full justify-start text-sm h-8"
+                          className="w-full justify-start text-sm h-10 hover:bg-primary/5"
                           onClick={() => handleNetworkSwitch(key as NetworkKey)}
                         >
-                          <div className={`network-indicator ${network.color} mr-2`} />
-                          {network.name}
+                          <div className={`network-indicator ${network.color} mr-3`} />
+                          <span className="flex-1 text-left">{network.name}</span>
                           {network.id === chainId && (
-                            <Check className="h-3 w-3 ml-auto text-success" />
+                            <Check className="h-4 w-4 text-primary" />
                           )}
                         </Button>
                       ))}
@@ -114,10 +123,10 @@ export const Header = () => {
             {/* Wallet Connection */}
             {isConnected && address ? (
               <div className="flex items-center space-x-2">
-                <Card className="px-3 py-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="network-indicator bg-success" />
-                    <span className="text-sm font-medium">{formatAddress(address)}</span>
+                <Card className="px-4 py-2 border-border/50 bg-card/50 backdrop-blur-sm">
+                  <div className="flex items-center space-x-3">
+                    <div className="network-indicator bg-success animate-pulse" />
+                    <span className="text-sm font-medium text-foreground">{formatAddress(address)}</span>
                   </div>
                 </Card>
                 
@@ -125,18 +134,19 @@ export const Header = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => disconnect()}
-                  className="hover:text-destructive"
+                  className="h-10 w-10 hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
               <Button 
-                className="btn-hero h-9"
+                className="btn-hero h-10 px-6 text-sm font-semibold shadow-lg hover:shadow-glow transition-all duration-300"
                 onClick={() => open()}
               >
                 <Wallet className="h-4 w-4 mr-2" />
-                Connect Wallet
+                <span className="hidden sm:inline">Connect Wallet</span>
+                <span className="sm:hidden">Connect</span>
               </Button>
             )}
 
@@ -144,7 +154,7 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="lg:hidden h-10 w-10"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -155,37 +165,39 @@ export const Header = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md">
-          <nav className="container mx-auto px-4 py-4 space-y-3">
-            <a href="#dashboard" className="block text-foreground hover:text-primary transition-colors">
-              Dashboard
-            </a>
-            <Link to="/create" className="block text-foreground hover:text-primary transition-colors">
-              Create Card
-            </Link>
-            <a href="#collection" className="block text-foreground hover:text-primary transition-colors">
-              My Collection
-            </a>
-            <a href="#referrals" className="block text-foreground hover:text-primary transition-colors">
-              Referrals
-            </a>
+        <div className="lg:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl shadow-lg">
+          <nav className="container mx-auto px-4 py-6 space-y-4">
+            <div className="grid gap-2">
+              <a href="#dashboard" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+                Dashboard
+              </a>
+              <Link to="/create" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+                Create Card
+              </Link>
+              <a href="#collection" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+                Collection
+              </a>
+              <a href="#referrals" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+                Referrals
+              </a>
+            </div>
             
             {/* Mobile Network Selector */}
             {isConnected && (
-              <div className="pt-3 border-t border-border">
-                <p className="text-sm font-medium mb-2">Switch Network:</p>
+              <div className="pt-4 border-t border-border/50">
+                <p className="text-sm font-semibold mb-3 text-muted-foreground px-4">Switch Network</p>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(NETWORKS).map(([key, network]) => (
                     <Button
                       key={key}
                       variant="ghost"
-                      className="justify-start text-sm h-8"
+                      className="justify-start text-sm h-12 hover:bg-primary/5"
                       onClick={() => handleNetworkSwitch(key as NetworkKey)}
                     >
-                      <div className={`network-indicator ${network.color} mr-2`} />
-                      {network.name}
+                      <div className={`network-indicator ${network.color} mr-3`} />
+                      <span className="flex-1 text-left">{network.name}</span>
                       {network.id === chainId && (
-                        <Check className="h-3 w-3 ml-auto text-success" />
+                        <Check className="h-4 w-4 text-primary" />
                       )}
                     </Button>
                   ))}
