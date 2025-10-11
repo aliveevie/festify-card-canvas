@@ -65,9 +65,9 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            <a href="#dashboard" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+            <Link to="/dashboard" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
               Dashboard
-            </a>
+            </Link>
             <Link to="/create" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
               Create Card
             </Link>
@@ -168,9 +168,9 @@ export const Header = () => {
         <div className="lg:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl shadow-lg">
           <nav className="container mx-auto px-4 py-6 space-y-4">
             <div className="grid gap-2">
-              <a href="#dashboard" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+              <Link to="/dashboard" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
                 Dashboard
-              </a>
+              </Link>
               <Link to="/create" className="flex items-center px-4 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
                 Create Card
               </Link>
