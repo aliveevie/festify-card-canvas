@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAccount, useWaitForTransactionReceipt, useReadContract, useSwitchChain } from 'wagmi';
-import { parseEther, formatEther, createWalletClient, custom, encodeFunctionData } from 'viem';
+import { parseEther, formatEther, createWalletClient, custom, encodeFunctionData, createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
 import { getReferralTag, submitReferral } from '@divvi/referral-sdk';
 import { Header } from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
@@ -282,8 +283,29 @@ export default function CreateCard() {
 
   const validateRecipient = (address: string) => {
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    const ensRegex = /^[a-zA-Z0-9-]+\.eth$/;
+    // Support various ENS domains (.eth, .xyz, .com, etc.)
+    const ensRegex = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
     return ethAddressRegex.test(address) || ensRegex.test(address);
+  };
+
+  const resolveEnsName = async (name: string): Promise<`0x${string}` | null> => {
+    try {
+      // Create a public client for ENS resolution on mainnet
+      const publicClient = createPublicClient({
+        chain: mainnet,
+        transport: http(),
+      });
+
+      // Resolve ENS name to address
+      const resolvedAddress = await publicClient.getEnsAddress({
+        name,
+      });
+
+      return resolvedAddress;
+    } catch (error) {
+      console.error('ENS resolution error:', error);
+      return null;
+    }
   };
 
   // Generate metadata URI (simplified for demo)
@@ -351,6 +373,33 @@ export default function CreateCard() {
       setIsPending(true);
       setError(null);
       
+      // Resolve ENS name if necessary
+      let recipientAddress: `0x${string}` = recipient as `0x${string}`;
+      const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+      
+      // If it's not a hex address, assume it's an ENS name
+      if (!ethAddressRegex.test(recipient)) {
+        toast({
+          title: "Resolving ENS Name",
+          description: `Looking up address for ${recipient}...`,
+        });
+        
+        const resolved = await resolveEnsName(recipient);
+        
+        if (!resolved) {
+          setIsPending(false);
+          toast({
+            title: "ENS Resolution Failed",
+            description: `Could not resolve ${recipient}. Please check the ENS name or use a wallet address instead.`,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        recipientAddress = resolved;
+        console.log(`ENS ${recipient} resolved to ${recipientAddress}`);
+      }
+      
       // Switch to selected network if needed
       if (chainId !== NETWORKS[selectedNetwork].id) {
         try {
@@ -387,7 +436,7 @@ export default function CreateCard() {
       const contractData = encodeFunctionData({
         abi: abi,
         functionName: 'mintGreetingCard',
-        args: [recipient as `0x${string}`, metadataURI, selectedFestival.name],
+        args: [recipientAddress, metadataURI, selectedFestival.name],
       });
 
       // Append the referral tag to the contract data (this is the key step!)
@@ -717,9 +766,17 @@ export default function CreateCard() {
                     )}
                   </div>
                   
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Shield className="h-4 w-4" />
-                    <span>Enter wallet address or ENS name — recipient will collect the NFT card</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <Shield className="h-4 w-4" />
+                      <span>Enter wallet address or ENS name — recipient will collect the NFT card</span>
+                    </div>
+                    {recipient && !recipient.startsWith('0x') && recipientValid && (
+                      <div className="flex items-center space-x-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <Globe className="h-4 w-4" />
+                        <span>ENS name detected: {recipient} will be resolved to an Ethereum address</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
