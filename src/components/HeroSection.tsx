@@ -209,7 +209,7 @@ export const HeroSection = () => {
               
               <Button 
                 variant="outline" 
-                className="border-white/30 text-white hover:bg-white/10 text-lg px-10 py-5 h-auto backdrop-blur-sm transition-all duration-300"
+                className="border-2 border-white/40 text-white hover:bg-white/20 hover:border-white/60 text-lg px-10 py-5 h-auto backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl bg-white/5"
                 onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
               >
                 <Globe className="h-5 w-5 mr-3" />

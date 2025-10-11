@@ -2,12 +2,18 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/useWallet";
+import { useReadContract } from 'wagmi';
+import { NETWORKS } from "@/lib/web3-config";
+import { abi } from "@/networks/abi.json";
 import { 
   Wallet, 
   TrendingUp, 
   Activity,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Send,
+  Inbox,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,6 +28,31 @@ export const WalletStatus = () => {
     formatBalance 
   } = useWallet();
   const { toast } = useToast();
+
+  // Get contract address for current network
+  const contractAddress = currentNetwork?.contractAddress;
+
+  // Read sent greetings
+  const { data: sentGreetingsData, isLoading: isLoadingSent } = useReadContract({
+    address: contractAddress as `0x${string}`,
+    abi: abi,
+    functionName: 'getSentGreetings',
+    args: [address as `0x${string}`],
+    query: {
+      enabled: !!address && !!contractAddress,
+    }
+  });
+
+  // Read received greetings
+  const { data: receivedGreetingsData, isLoading: isLoadingReceived } = useReadContract({
+    address: contractAddress as `0x${string}`,
+    abi: abi,
+    functionName: 'getReceivedGreetings',
+    args: [address as `0x${string}`],
+    query: {
+      enabled: !!address && !!contractAddress,
+    }
+  });
 
   const copyAddress = () => {
     if (address) {
@@ -111,20 +142,36 @@ export const WalletStatus = () => {
         <Card className="card-elevated p-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="h-4 w-4 text-success" />
+              <Send className="h-4 w-4 text-success" />
               <span className="text-sm font-medium">Cards Sent</span>
             </div>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoadingSent ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : (
+                sentGreetingsData && Array.isArray(sentGreetingsData) 
+                  ? (sentGreetingsData as bigint[]).length 
+                  : 0
+              )}
+            </div>
           </div>
         </Card>
         
         <Card className="card-elevated p-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Wallet className="h-4 w-4 text-primary" />
+              <Inbox className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Cards Received</span>
             </div>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoadingReceived ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : (
+                receivedGreetingsData && Array.isArray(receivedGreetingsData) 
+                  ? (receivedGreetingsData as bigint[]).length 
+                  : 0
+              )}
+            </div>
           </div>
         </Card>
       </div>
