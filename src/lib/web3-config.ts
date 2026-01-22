@@ -31,9 +31,27 @@ const liskChain: Chain = {
   },
 }
 
+// Define custom Avalanche C-Chain
+const avalancheChain: Chain = {
+  id: 43114,
+  name: 'Avalanche',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Avalanche',
+    symbol: 'AVAX',
+  },
+  rpcUrls: {
+    default: { http: ['https://avalanche.drpc.org', 'https://api.avax.network/ext/bc/C/rpc'] },
+    public: { http: ['https://avalanche.drpc.org', 'https://api.avax.network/ext/bc/C/rpc'] },
+  },
+  blockExplorers: {
+    default: { name: 'Avascan', url: 'https://avascan.info' },
+  },
+}
+
 // Create wagmi config
 export const config = defaultWagmiConfig({
-  chains: [mainnet, celo, base, optimism, liskChain],
+  chains: [mainnet, celo, base, optimism, liskChain, avalancheChain],
   projectId,
   metadata,
   ssr: true,
@@ -75,6 +93,14 @@ export const NETWORKS = {
     currency: 'ETH',
     color: 'network-lisk',
     chain: liskChain
+  },
+  avalanche: {
+    id: avalancheChain.id,
+    name: 'Avalanche',
+    contractAddress: '0x822F7cb652befF262Ec5aE9F4203DD066E3174cd',
+    currency: 'AVAX',
+    color: 'network-avalanche',
+    chain: avalancheChain
   }
 } as const
 
