@@ -75,6 +75,7 @@ export default {
           base: "hsl(var(--network-base))",
           optimism: "hsl(var(--network-optimism))",
           lisk: "hsl(var(--network-lisk))",
+          avalanche: "hsl(var(--network-avalanche))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

@@ -53,6 +53,7 @@ All colors MUST be HSL. Based on premium gold color palette for luxury Web3 expe
     --network-base: 221 83% 53%;
     --network-optimism: 0 100% 50%;
     --network-lisk: 262 83% 58%;
+    --network-avalanche: 0 100% 50%;
 
     /* Interactive elements */
     --border: 42 20% 90%;
@@ -213,6 +214,10 @@ All colors MUST be HSL. Based on premium gold color palette for luxury Web3 expe
 
   .network-lisk {
     @apply bg-[hsl(var(--network-lisk))];
+  }
+
+  .network-avalanche {
+    @apply bg-[hsl(var(--network-avalanche))];
   }
 
   /* Text Gradients */
