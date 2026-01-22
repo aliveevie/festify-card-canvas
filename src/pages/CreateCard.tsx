@@ -218,9 +218,53 @@ export default function CreateCard() {
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { toast } = useToast();
+  
+  // Track actual wallet chain ID (may differ from wagmi's chainId)
+  const [actualWalletChainId, setActualWalletChainId] = useState<number | null>(null);
 
-  // Get current network
-  const currentNetwork = Object.entries(NETWORKS).find(([, network]) => network.id === chainId)?.[1] || NETWORKS.celo;
+  // Get actual chain ID from wallet provider
+  useEffect(() => {
+    const getWalletChainId = async () => {
+      const ethereum = (window as any).ethereum;
+      if (ethereum && isConnected) {
+        try {
+          const chainIdHex = await ethereum.request({ method: 'eth_chainId' });
+          const chainIdNumber = parseInt(chainIdHex, 16);
+          setActualWalletChainId(chainIdNumber);
+          console.log('Actual wallet chain ID:', chainIdNumber);
+        } catch (error) {
+          console.error('Error getting chain ID from wallet:', error);
+          setActualWalletChainId(chainId || null);
+        }
+      } else {
+        setActualWalletChainId(chainId || null);
+      }
+    };
+
+    getWalletChainId();
+
+    // Listen for chain changes
+    const ethereum = (window as any).ethereum;
+    if (ethereum) {
+      const handleChainChanged = (chainIdHex: string) => {
+        const chainIdNumber = parseInt(chainIdHex, 16);
+        setActualWalletChainId(chainIdNumber);
+        console.log('Chain changed to:', chainIdNumber);
+      };
+
+      ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [isConnected, chainId]);
+
+  // Get current network based on actual wallet chain ID
+  const currentNetwork = actualWalletChainId 
+    ? Object.entries(NETWORKS).find(([, network]) => network.id === actualWalletChainId)?.[1] || null
+    : Object.entries(NETWORKS).find(([, network]) => network.id === chainId)?.[1] || NETWORKS.celo;
+  
   const contractAddress = NETWORKS[selectedNetwork].contractAddress;
 
   // Read contract data
@@ -400,30 +444,81 @@ export default function CreateCard() {
         console.log(`ENS ${recipient} resolved to ${recipientAddress}`);
       }
       
-      // Switch to selected network if needed
-      if (chainId !== NETWORKS[selectedNetwork].id) {
+      // Get the actual current chain ID directly from the wallet provider
+      const ethereum = (window as any).ethereum;
+      let actualChainId: number;
+      
+      if (ethereum) {
         try {
+          const chainIdHex = await ethereum.request({ method: 'eth_chainId' });
+          actualChainId = parseInt(chainIdHex, 16);
+          console.log('Wallet chain ID:', actualChainId, 'Expected:', NETWORKS[selectedNetwork].id);
+        } catch (error) {
+          console.error('Error getting chain ID from wallet:', error);
+          // Fallback to wagmi's chainId if wallet request fails
+          actualChainId = chainId || 0;
+        }
+      } else {
+        actualChainId = chainId || 0;
+      }
+      
+      // Switch to selected network if needed
+      if (actualChainId !== NETWORKS[selectedNetwork].id) {
+        try {
+          toast({
+            title: "Switching Network",
+            description: `Switching to ${NETWORKS[selectedNetwork].name}...`,
+          });
           await switchChain({ chainId: NETWORKS[selectedNetwork].id });
-          // Wait a moment for the network switch to complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait for the network switch to complete and verify
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Verify the switch was successful by checking the current chainId again
+          if (ethereum) {
+            const newChainIdHex = await ethereum.request({ method: 'eth_chainId' });
+            const newChainIdNumber = parseInt(newChainIdHex, 16);
+            console.log('After switch - Wallet chain ID:', newChainIdNumber, 'Expected:', NETWORKS[selectedNetwork].id);
+            if (newChainIdNumber !== NETWORKS[selectedNetwork].id) {
+              throw new Error('Network switch verification failed. Please ensure you are on the correct network.');
+            }
+          }
         } catch (switchError) {
           console.error('Network switch failed:', switchError);
           setIsPending(false);
           toast({
             title: "Network Switch Failed",
-            description: `Please manually switch to ${NETWORKS[selectedNetwork].name} in your wallet.`,
+            description: `Please manually switch to ${NETWORKS[selectedNetwork].name} in your wallet and try again.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        console.log('Wallet is already on the correct network:', NETWORKS[selectedNetwork].name);
+      }
+
+      const message = customMessage || selectedCard.preview;
+
+      // Verify we're on the correct chain one more time before creating wallet client
+      if (ethereum) {
+        const finalChainIdHex = await ethereum.request({ method: 'eth_chainId' });
+        const finalChainId = parseInt(finalChainIdHex, 16);
+        if (finalChainId !== NETWORKS[selectedNetwork].id) {
+          setIsPending(false);
+          toast({
+            title: "Wrong Network",
+            description: `Please switch to ${NETWORKS[selectedNetwork].name} (Chain ID: ${NETWORKS[selectedNetwork].id}) in your wallet. Current chain: ${finalChainId}`,
             variant: "destructive",
           });
           return;
         }
       }
 
-      const message = customMessage || selectedCard.preview;
-
-      // Create wallet client for direct transaction sending
+      // Create wallet client for direct transaction sending - use the selected network's chain
+      // The chain must match what the wallet is actually connected to
       const walletClient = createWalletClient({
         chain: NETWORKS[selectedNetwork].chain,
         transport: custom((window as any).ethereum),
+        account: address as `0x${string}`,
       });
 
       // Generate Divvi referral tag for tracking
@@ -480,6 +575,10 @@ export default function CreateCard() {
   const getExplorerUrl = (hash: string) => {
     const network = NETWORKS[selectedNetwork];
     if (network.chain.blockExplorers?.default?.url) {
+      // Avalanche uses a different URL format
+      if (selectedNetwork === 'avalanche') {
+        return `https://avascan.info/blockchain/c/tx/${hash}`;
+      }
       return `${network.chain.blockExplorers.default.url}/tx/${hash}`;
     }
     return null;
@@ -1011,11 +1110,11 @@ export default function CreateCard() {
             </Card>
 
             {/* Status Messages */}
-            {isConnected && chainId !== NETWORKS[selectedNetwork].id && (
+            {isConnected && actualWalletChainId !== null && actualWalletChainId !== NETWORKS[selectedNetwork].id && (
               <Alert className="border-orange-200 bg-orange-50" variant="default">
                 <AlertCircle className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="text-orange-800">
-                  You're connected to {currentNetwork?.name || 'Unknown Network'}, but need to be on {NETWORKS[selectedNetwork].name}. 
+                  You're connected to {currentNetwork?.name || `Chain ${actualWalletChainId}`}, but need to be on {NETWORKS[selectedNetwork].name}. 
                   The app will automatically switch networks when you mint.
                 </AlertDescription>
               </Alert>
