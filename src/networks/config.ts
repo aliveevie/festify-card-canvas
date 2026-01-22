@@ -26,5 +26,12 @@ const NETWORKS = {
       name: 'Optimism Mainnet',
       chainId: 10,
       currency: 'ETH',
+    },
+    avalanche: {
+      rpcUrl: 'https://avalanche.drpc.org',
+      contractAddress: '0x822F7cb652befF262Ec5aE9F4203DD066E3174cd',
+      name: 'Avalanche C-Chain',
+      chainId: 43114,
+      currency: 'AVAX',
     }
   };
