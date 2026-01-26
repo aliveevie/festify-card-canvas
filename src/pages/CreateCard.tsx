@@ -42,6 +42,14 @@ import {
 } from "lucide-react";
 import { NETWORKS, type NetworkKey } from "@/lib/web3-config";
 import { abi } from "@/networks/abi.json";
+import { 
+  generateImage, 
+  enhancePrompt, 
+  generateNft,
+  mintNft,
+  bufferToDataURL,
+  type GenerateImageParams 
+} from "@/services/imageApi";
 
 // Divvi consumer address for referral tracking
 const DIVVI_CONSUMER_ADDRESS = '0x4eA48e01F1314Db0925653e30617B254D1cf5366';
@@ -98,47 +106,16 @@ const designThemes = [
   }
 ];
 
-// Premium Card Templates
-const premiumCards = [
+// AI Card Template
+const aiCards = [
   {
-    id: 'premium-1',
-    title: "Golden Celebration",
-    category: "Premium NFT",
-    preview: "May this special day shine as bright as gold in your heart...",
-    gradient: "from-amber-400 via-yellow-500 to-orange-500",
-    emoji: "👑",
-    price: "0.01 ETH",
-    features: ["Animated", "Rare", "Collectible"]
-  },
-  {
-    id: 'premium-2',
-    title: "Diamond Wishes",
-    category: "Premium NFT",
-    preview: "Sending you wishes as precious and rare as diamonds...",
-    gradient: "from-blue-400 via-purple-500 to-pink-500",
-    emoji: "💎",
-    price: "0.02 ETH",
-    features: ["3D Effect", "Exclusive", "Limited"]
-  },
-  {
-    id: 'premium-3',
-    title: "Crystal Blessings",
-    category: "Premium NFT",
-    preview: "May crystal-clear blessings flow into your life...",
-    gradient: "from-cyan-400 via-blue-500 to-indigo-600",
-    emoji: "🔮",
-    price: "0.015 ETH",
-    features: ["Interactive", "Premium", "Unique"]
-  },
-  {
-    id: 'premium-4',
-    title: "Royal Greetings",
-    category: "Premium NFT",
-    preview: "Royal greetings for someone truly special in your life...",
-    gradient: "from-purple-500 via-pink-500 to-red-500",
-    emoji: "🏰",
-    price: "0.025 ETH",
-    features: ["Royal", "Exclusive", "Animated"]
+    id: 'ai-card',
+    title: "AI Generated Card",
+    category: "AI Card",
+    preview: "Create a unique AI-generated greeting card with your custom prompt...",
+    gradient: "from-indigo-500 via-purple-500 to-pink-500",
+    emoji: "✨",
+    features: ["AI Generated", "Unique", "Custom"]
   }
 ];
 
@@ -151,7 +128,6 @@ const freeCards = [
     preview: "Sending you warm wishes and heartfelt greetings...",
     gradient: "from-green-400 to-blue-500",
     emoji: "💚",
-    price: "Free",
     features: ["Classic", "Heartfelt"]
   },
   {
@@ -161,7 +137,6 @@ const freeCards = [
     preview: "It's time to celebrate! May joy fill your day...",
     gradient: "from-pink-400 to-purple-500",
     emoji: "🎉",
-    price: "Free",
     features: ["Festive", "Joyful"]
   },
   {
@@ -171,7 +146,6 @@ const freeCards = [
     preview: "Wishing you all the best on this wonderful day...",
     gradient: "from-orange-400 to-red-500",
     emoji: "⭐",
-    price: "Free",
     features: ["Classic", "Sincere"]
   },
   {
@@ -181,7 +155,6 @@ const freeCards = [
     preview: "May this day be filled with countless blessings...",
     gradient: "from-teal-400 to-green-500",
     emoji: "🙏",
-    price: "Free",
     features: ["Spiritual", "Blessed"]
   }
 ];
@@ -201,19 +174,35 @@ const festivals = [
 
 export default function CreateCard() {
   // Card selection state
-  const [cardType, setCardType] = useState<'free' | 'premium'>('free');
+  const [cardType, setCardType] = useState<'free' | 'ai'>('free');
   const [selectedCard, setSelectedCard] = useState(freeCards[0]);
   const [selectedFestival, setSelectedFestival] = useState(festivals[0]);
   const [selectedTheme, setSelectedTheme] = useState(designThemes[0]); // Default to gold theme
   const [customMessage, setCustomMessage] = useState("");
   const [recipient, setRecipient] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkKey>('celo');
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkKey>('avalanche');
   const [metadataURI, setMetadataURI] = useState("");
   
   // UI state
   const [currentStep, setCurrentStep] = useState(1);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [recipientValid, setRecipientValid] = useState<boolean | null>(null);
+  
+  // AI Image Generation state
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [enhancedPrompt, setEnhancedPrompt] = useState("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
+  // Use defaults for AI generation - no user selection needed
+  const imageModel: 'velogen' | 'nebula_forge_xl' | 'VisionaryForge' | 'Dale3' = 'velogen';
+  const imageSteps = 2;
+  const imageEnhance: '1x' | '2x' | 'original' = '1x';
+  
+  // ChainGPT NFT state
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [isMintingNFT, setIsMintingNFT] = useState(false);
   
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -325,6 +314,91 @@ export default function CreateCard() {
     setIsGeneratingAI(false);
   };
 
+  // AI Image Generation functions
+  const handleEnhancePrompt = async () => {
+    if (!imagePrompt.trim()) {
+      toast({
+        title: "Prompt Required",
+        description: "Please enter a prompt to enhance.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsEnhancingPrompt(true);
+    setImageGenerationError(null);
+    try {
+      const result = await enhancePrompt(imagePrompt);
+      setEnhancedPrompt(result.data.enhancedPrompt);
+      setImagePrompt(result.data.enhancedPrompt);
+      toast({
+        title: "Prompt Enhanced",
+        description: "Your prompt has been enhanced for better results.",
+      });
+    } catch (error: any) {
+      setImageGenerationError(error.message || "Failed to enhance prompt");
+      toast({
+        title: "Enhancement Failed",
+        description: error.message || "Failed to enhance prompt. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancingPrompt(false);
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) {
+      toast({
+        title: "Prompt Required",
+        description: "Please enter a prompt to generate an image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    setImageGenerationError(null);
+    setGeneratedImageUrl(null);
+
+    try {
+      // Build prompt with festival context
+      const festivalContext = selectedFestival ? `${selectedFestival.name} greeting card, ` : '';
+      const fullPrompt = `${festivalContext}${imagePrompt}, premium greeting card design, high quality, beautiful colors, ${selectedTheme.name.toLowerCase()} theme`;
+
+      const params: GenerateImageParams = {
+        prompt: fullPrompt,
+        model: imageModel,
+        steps: imageSteps,
+        height: 1024,
+        width: 1024,
+        enhance: imageEnhance,
+      };
+
+      const result = await generateImage(params);
+      
+      if (result.success && result.data?.data) {
+        const dataUrl = bufferToDataURL(result.data.data);
+        setGeneratedImageUrl(dataUrl);
+        toast({
+          title: "Image Generated",
+          description: "Your AI-generated image is ready!",
+        });
+      } else {
+        throw new Error("Invalid response from image generation API");
+      }
+    } catch (error: any) {
+      setImageGenerationError(error.message || "Failed to generate image");
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const validateRecipient = (address: string) => {
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
     // Support various ENS domains (.eth, .xyz, .com, etc.)
@@ -357,24 +431,32 @@ export default function CreateCard() {
     if (selectedFestival && selectedCard && recipient) {
       const message = customMessage || selectedCard.preview;
       
+      // Use generated image if available, otherwise use default
+      const imageUrl = generatedImageUrl || `https://festify.com/cards/${selectedCard.id}.png`;
+      
       const metadata = {
         name: `${selectedFestival.name} ${selectedCard.title}`,
         description: message,
-        image: `https://festify.com/cards/${selectedCard.id}.png`,
+        image: imageUrl,
         attributes: [
           { trait_type: "Festival", value: selectedFestival.name },
           { trait_type: "Card Type", value: selectedCard.category },
           { trait_type: "Template", value: selectedCard.title },
           { trait_type: "Theme", value: selectedTheme.name },
           { trait_type: "Sender", value: address || "Unknown" },
-          { trait_type: "Recipient", value: recipient }
+          { trait_type: "Recipient", value: recipient },
+          ...(generatedImageUrl ? [
+            { trait_type: "AI Generated", value: "Yes" },
+            { trait_type: "Generation Model", value: imageModel },
+            { trait_type: "Prompt", value: imagePrompt.substring(0, 100) }
+          ] : [])
         ]
       };
       
       // In a real app, you'd upload this to IPFS or similar
       setMetadataURI(JSON.stringify(metadata));
     }
-  }, [selectedFestival, selectedCard, selectedTheme, customMessage, recipient, address]);
+  }, [selectedFestival, selectedCard, selectedTheme, customMessage, recipient, address, generatedImageUrl, imageModel, imagePrompt]);
 
   // Validate recipient on change
   useEffect(() => {
@@ -413,6 +495,123 @@ export default function CreateCard() {
       return;
     }
 
+    // For AI-generated cards, use ChainGPT NFT minting
+    if (selectedCard.id === 'ai-card') {
+      if (!generatedImageUrl && !imagePrompt.trim()) {
+        toast({
+          title: "Image Required",
+          description: "Please generate an image first or provide a prompt for AI generation.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        setIsMintingNFT(true);
+        setIsPending(true);
+        setError(null);
+
+        // Resolve ENS name if necessary
+        let recipientAddress: string = recipient;
+        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+        
+        if (!ethAddressRegex.test(recipient)) {
+          const resolved = await resolveEnsName(recipient);
+          if (!resolved) {
+            setIsPending(false);
+            setIsMintingNFT(false);
+            toast({
+              title: "ENS Resolution Failed",
+              description: `Could not resolve ${recipient}. Please use a wallet address instead.`,
+              variant: "destructive",
+            });
+            return;
+          }
+          recipientAddress = resolved;
+        }
+
+        // Build prompt for NFT generation
+        const festivalContext = selectedFestival ? `${selectedFestival.name} greeting card, ` : '';
+        const nftPrompt = imagePrompt.trim() 
+          ? `${festivalContext}${imagePrompt}, premium greeting card design, high quality, beautiful colors, ${selectedTheme.name.toLowerCase()} theme`
+          : `${festivalContext}${customMessage}, premium greeting card design, high quality, beautiful colors, ${selectedTheme.name.toLowerCase()} theme`;
+
+        // For AI cards, use Avalanche or Base (prefer Avalanche)
+        // Check if selected network is supported, otherwise default to Avalanche
+        const aiNetwork: NetworkKey = (selectedNetwork === 'avalanche' || selectedNetwork === 'base') 
+          ? selectedNetwork 
+          : 'avalanche';
+        const chainId = NETWORKS[aiNetwork].id;
+
+        toast({
+          title: "Generating NFT",
+          description: "Creating your AI-generated NFT card...",
+        });
+
+        // Generate NFT using ChainGPT
+        const nftResult = await generateNft({
+          prompt: nftPrompt,
+          walletAddress: recipientAddress,
+          chainId: chainId,
+          model: imageModel,
+          steps: imageSteps,
+          height: 1024,
+          width: 1024,
+          enhance: imageEnhance,
+          amount: 1
+        });
+
+        if (nftResult.success && nftResult.data.collectionId) {
+          setCollectionId(nftResult.data.collectionId);
+
+          toast({
+            title: "NFT Queued",
+            description: "Minting your NFT...",
+          });
+
+          // Mint the NFT directly - ChainGPT will handle generation completion
+          const mintResult = await mintNft({
+            collectionId: nftResult.data.collectionId,
+            name: `${selectedFestival.name} ${selectedCard.title}`,
+            description: customMessage || selectedCard.preview,
+            symbol: "FESTIFY",
+            ids: [1]
+          });
+
+          if (mintResult.success) {
+            setIsPending(false);
+            setIsMintingNFT(false);
+            
+            toast({
+              title: "NFT Minted Successfully!",
+              description: `Your AI-generated greeting card NFT has been minted and sent to ${formatAddress(recipientAddress)}`,
+            });
+            
+            // Set success state with transaction hash for explorer link
+            if (mintResult.data.transaction) {
+              setHash(mintResult.data.transaction as `0x${string}`);
+            }
+          } else {
+            throw new Error("Failed to mint NFT");
+          }
+        } else {
+          throw new Error("Failed to generate NFT");
+        }
+      } catch (err: any) {
+        console.error('Error minting AI NFT:', err);
+        setIsPending(false);
+        setIsMintingNFT(false);
+        setError(err as Error);
+        toast({
+          title: "NFT Minting Failed",
+          description: err.message || "Failed to mint NFT. Please try again.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    // Regular minting flow for non-AI cards
     try {
       setIsPending(true);
       setError(null);
@@ -584,6 +783,24 @@ export default function CreateCard() {
     return null;
   };
 
+  const getExplorerUrlForNetwork = (hash: string, networkKey: NetworkKey) => {
+    const network = NETWORKS[networkKey];
+    
+    // Handle specific network explorer URLs
+    if (networkKey === 'avalanche') {
+      return `https://avascan.info/blockchain/c/tx/${hash}`;
+    }
+    if (networkKey === 'base') {
+      return `https://basescan.org/tx/${hash}`;
+    }
+    
+    // Use default explorer if available
+    if (network.chain.blockExplorers?.default?.url) {
+      return `${network.chain.blockExplorers.default.url}/tx/${hash}`;
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
       {/* Premium Background Effects */}
@@ -594,8 +811,8 @@ export default function CreateCard() {
       </div>
       
       <SEOHead 
-        title="Create Premium Greeting Card - Festify"
-        description="Design and mint personalized NFT greeting cards for any festival. Choose from 25+ premium themes, customize your message, and send across multiple blockchains."
+        title="Create Greeting Card - Festify"
+        description="Design and mint personalized NFT greeting cards for any festival. Create free cards or AI-generated cards, customize your message, and send across multiple blockchains."
         url="https://www.festify.club/create"
       />
       <Header />
@@ -607,7 +824,7 @@ export default function CreateCard() {
             <div className="inline-flex items-center space-x-3">
               <Badge className="bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 px-6 py-3 backdrop-blur-sm">
                 <Gift className="h-4 w-4 mr-2" />
-                Premium Card Creator
+                Card Creator
               </Badge>
               <div className="h-1 w-20 bg-gradient-to-r from-primary to-accent rounded-full" />
             </div>
@@ -618,7 +835,7 @@ export default function CreateCard() {
             </h1>
             
             <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Choose from our premium collection of greeting cards or create a free one. 
+              Choose from our collection of greeting cards or create an AI-generated one. 
               Customize your message and send memorable digital cards across multiple blockchains.
             </p>
           </div>
@@ -656,7 +873,7 @@ export default function CreateCard() {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-foreground">Choose Card Type</h3>
-                    <p className="text-muted-foreground">Select between free or premium NFT cards</p>
+                    <p className="text-muted-foreground">Select between free cards or AI-generated cards</p>
                   </div>
                 </div>
 
@@ -679,24 +896,24 @@ export default function CreateCard() {
                   </button>
                   <button
                     onClick={() => {
-                      setCardType('premium');
-                      setSelectedCard(premiumCards[0]);
+                      setCardType('ai');
+                      setSelectedCard(aiCards[0]);
                       setCurrentStep(1);
                     }}
                     className={`flex-1 flex items-center justify-center space-x-3 py-4 px-6 rounded-xl transition-all duration-300 ${
-                      cardType === 'premium'
+                      cardType === 'ai'
                         ? 'bg-white shadow-lg text-foreground'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Crown className="h-5 w-5" />
-                    <span className="font-semibold">Premium NFT Cards</span>
+                    <Sparkles className="h-5 w-5" />
+                    <span className="font-semibold">AI Card</span>
                   </button>
                 </div>
 
                 {/* Card Selection Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {(cardType === 'free' ? freeCards : premiumCards).map((card) => (
+                  {(cardType === 'free' ? freeCards : aiCards).map((card) => (
                     <div
                       key={card.id}
                       onClick={() => {
@@ -739,9 +956,6 @@ export default function CreateCard() {
                                 {feature}
                               </Badge>
                             ))}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-primary">{card.price}</div>
                           </div>
                         </div>
                       </div>
@@ -833,6 +1047,116 @@ export default function CreateCard() {
               </div>
             </Card>
 
+            {/* AI Image Generation Section - Only show for AI Card */}
+            {selectedCard.id === 'ai-card' && (
+              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
+                <div className="p-8">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/5 flex items-center justify-center">
+                      <Sparkles className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">Generate Your Image</h3>
+                      <p className="text-muted-foreground">Describe the image you want to create</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Prompt Input */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-2 block">
+                          Describe Your Image
+                        </label>
+                        <Textarea
+                          placeholder="Describe your greeting card image... (e.g., 'A beautiful sunset over mountains with warm golden colors')"
+                          value={imagePrompt}
+                          onChange={(e) => setImagePrompt(e.target.value)}
+                          className="min-h-24 text-base border-2 border-slate-200 focus:border-primary/50 transition-all duration-200 rounded-2xl"
+                          maxLength={500}
+                        />
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              onClick={handleEnhancePrompt}
+                              disabled={isEnhancingPrompt || !imagePrompt.trim()}
+                              variant="outline"
+                              size="sm"
+                              className="border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+                            >
+                              {isEnhancingPrompt ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Wand2 className="h-4 w-4 mr-2" />
+                              )}
+                              Enhance Prompt
+                            </Button>
+                          </div>
+                          <div className="text-sm font-medium text-muted-foreground">
+                            {imagePrompt.length}/500 characters
+                          </div>
+                        </div>
+                        {enhancedPrompt && enhancedPrompt !== imagePrompt && (
+                          <Alert className="mt-3 border-blue-200 bg-blue-50">
+                            <AlertDescription className="text-blue-800">
+                              <strong>Enhanced:</strong> {enhancedPrompt}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+
+                      {/* Generate Button */}
+                      <Button
+                        onClick={handleGenerateImage}
+                        disabled={isGeneratingImage || !imagePrompt.trim()}
+                        className="w-full h-12 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-lg transition-all duration-300"
+                      >
+                        {isGeneratingImage ? (
+                          <>
+                            <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                            Generating Image...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-5 w-5 mr-3" />
+                            Generate Image
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Error Display */}
+                      {imageGenerationError && (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>{imageGenerationError}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      {/* Generated Image Preview */}
+                      {generatedImageUrl && (
+                        <div className="space-y-4">
+                          <div className="relative rounded-2xl overflow-hidden border-2 border-primary/20 shadow-xl">
+                            <img
+                              src={generatedImageUrl}
+                              alt="Generated greeting card"
+                              className="w-full h-auto"
+                            />
+                            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground bg-green-50 p-3 rounded-lg border border-green-200">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>Image generated successfully! It will be used for your NFT card.</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Recipient Input */}
             <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
               <div className="p-8">
@@ -881,60 +1205,80 @@ export default function CreateCard() {
               </div>
             </Card>
 
-            {/* Network Selection */}
-            <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
-              <div className="p-8">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                    <Network className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground">Select Network</h3>
-                    <p className="text-muted-foreground">Choose your preferred blockchain</p>
-                  </div>
-                </div>
-                
-                <Select value={selectedNetwork} onValueChange={handleNetworkChange}>
-                  <SelectTrigger className="w-full h-14 text-lg border-2 border-slate-200 hover:border-primary/50 transition-all duration-200 rounded-2xl">
-                    <SelectValue placeholder="Choose a network" />
-                  </SelectTrigger>
-                  <SelectContent className="border-2 border-slate-200 shadow-xl rounded-2xl">
-                    {Object.entries(NETWORKS).map(([key, network]) => (
-                      <SelectItem key={key} value={key} className="h-12">
-                        <div className="flex items-center space-x-3">
-                          <div className={`network-indicator ${network.color} w-4 h-4 rounded-full`} />
-                          <span className="font-medium">{network.name}</span>
-                          <span className="text-muted-foreground">({network.currency})</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <div className="mt-6 p-6 bg-gradient-to-r from-muted/30 to-muted/20 rounded-2xl border border-slate-200">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Contract Address:</span>
-                      <code className="text-sm bg-background/80 px-3 py-1 rounded-lg border border-slate-200">
-                        {formatAddress(contractAddress)}
-                      </code>
+            {/* Network Selection - Hidden for AI cards, shown for free cards */}
+            {selectedCard.id !== 'ai-card' && (
+              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
+                <div className="p-8">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <Network className="h-6 w-6 text-primary" />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Mint Fee:</span>
-                      <span className="font-mono text-sm">
-                        {isLoadingFee ? (
-                          <span className="text-muted-foreground">Loading...</span>
-                        ) : mintFee && typeof mintFee === 'bigint' ? (
-                          `${formatEther(mintFee)} ${NETWORKS[selectedNetwork].currency}`
-                        ) : (
-                          <span className="text-success font-semibold">Free</span>
-                        )}
-                      </span>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">Select Network</h3>
+                      <p className="text-muted-foreground">Choose your preferred blockchain</p>
+                    </div>
+                  </div>
+                  
+                  <Select value={selectedNetwork} onValueChange={handleNetworkChange}>
+                    <SelectTrigger className="w-full h-14 text-lg border-2 border-slate-200 hover:border-primary/50 transition-all duration-200 rounded-2xl">
+                      <SelectValue placeholder="Choose a network" />
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-slate-200 shadow-xl rounded-2xl">
+                      {Object.entries(NETWORKS).map(([key, network]) => (
+                        <SelectItem key={key} value={key} className="h-12">
+                          <div className="flex items-center space-x-3">
+                            <div className={`network-indicator ${network.color} w-4 h-4 rounded-full`} />
+                            <span className="font-medium">{network.name}</span>
+                            <span className="text-muted-foreground">({network.currency})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="mt-6 p-6 bg-gradient-to-r from-muted/30 to-muted/20 rounded-2xl border border-slate-200">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">Contract Address:</span>
+                        <code className="text-sm bg-background/80 px-3 py-1 rounded-lg border border-slate-200">
+                          {formatAddress(contractAddress)}
+                        </code>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
+
+            {/* AI Card Network Info - Show which network will be used */}
+            {selectedCard.id === 'ai-card' && (
+              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
+                <div className="p-8">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/5 flex items-center justify-center">
+                      <Network className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">Network</h3>
+                      <p className="text-muted-foreground">AI cards are minted on Avalanche or Base</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse" />
+                        <span className="text-sm font-medium text-foreground">
+                          {selectedNetwork === 'avalanche' || selectedNetwork === 'base' 
+                            ? `Minting on ${NETWORKS[selectedNetwork].name}`
+                            : 'Will mint on Avalanche (default)'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Design Theme Selector */}
             <Card className="relative overflow-hidden bg-white/80 backdrop-blur-sm border border-slate-200 shadow-xl">
@@ -1012,8 +1356,8 @@ export default function CreateCard() {
                             <span className="text-lg mr-2">{selectedCard.emoji}</span>
                             {selectedCard.title}
                           </Badge>
-                          {selectedCard.category === 'Premium NFT' && (
-                            <Crown className="h-5 w-5 text-yellow-300 drop-shadow-lg" />
+                          {selectedCard.category === 'AI Card' && (
+                            <Sparkles className="h-5 w-5 text-indigo-300 drop-shadow-lg" />
                           )}
                         </div>
                         <div className="flex space-x-1">
@@ -1025,21 +1369,37 @@ export default function CreateCard() {
                       
                       {/* Main Content */}
                       <div className="text-center space-y-6 flex-1 flex flex-col justify-center">
-                        {/* Festival Icon */}
-                        <div className="relative">
-                          <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shadow-2xl">
-                            <span className="text-4xl">{selectedFestival.emoji}</span>
+                        {/* Generated Image or Festival Icon */}
+                        {generatedImageUrl ? (
+                          <div className="relative max-w-md mx-auto">
+                            <img
+                              src={generatedImageUrl}
+                              alt="Generated greeting card"
+                              className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/30"
+                            />
+                            <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg">
+                              <CheckCircle className="h-5 w-5 text-white" />
+                            </div>
                           </div>
-                          <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse" />
-                        </div>
-                        
-                        {/* Festival Title */}
-                        <div className="space-y-2">
-                          <h3 className="text-3xl font-bold text-white drop-shadow-lg">
-                            {selectedFestival.name} Greetings!
-                          </h3>
-                          <div className="w-16 h-1 bg-white/60 mx-auto rounded-full" />
-                        </div>
+                        ) : (
+                          <>
+                            {/* Festival Icon */}
+                            <div className="relative">
+                              <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shadow-2xl">
+                                <span className="text-4xl">{selectedFestival.emoji}</span>
+                              </div>
+                              <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse" />
+                            </div>
+                            
+                            {/* Festival Title */}
+                            <div className="space-y-2">
+                              <h3 className="text-3xl font-bold text-white drop-shadow-lg">
+                                {selectedFestival.name} Greetings!
+                              </h3>
+                              <div className="w-16 h-1 bg-white/60 mx-auto rounded-full" />
+                            </div>
+                          </>
+                        )}
                         
                         {/* Custom Message */}
                         <div className="max-w-md mx-auto">
@@ -1065,14 +1425,14 @@ export default function CreateCard() {
                         {/* Card Type Badge */}
                         <div className="mt-4 flex justify-center">
                           <Badge className={`px-4 py-2 text-xs font-bold ${
-                            selectedCard.category === 'Premium NFT' 
-                              ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                            selectedCard.category === 'AI Card' 
+                              ? 'bg-gradient-to-r from-indigo-400 to-purple-500 text-white shadow-lg' 
                               : 'bg-white/20 text-white backdrop-blur-sm'
                           }`}>
-                            {selectedCard.category === 'Premium NFT' ? (
+                            {selectedCard.category === 'AI Card' ? (
                               <>
-                                <Crown className="h-3 w-3 mr-1" />
-                                Premium NFT Card
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                AI Generated Card
                               </>
                             ) : (
                               <>
@@ -1102,7 +1462,7 @@ export default function CreateCard() {
                       <span className="text-muted-foreground">Live Preview</span>
                     </div>
                     <div className="text-muted-foreground">
-                      {selectedCard.category} • {selectedCard.price} • {selectedTheme.name}
+                      {selectedCard.category} • {selectedTheme.name}
                     </div>
                   </div>
                 </div>
@@ -1136,16 +1496,40 @@ export default function CreateCard() {
               <Alert className="border-green-200 bg-green-50" variant="default">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  Card minted successfully! 
-                  {hash && getExplorerUrl(hash) && (
-                    <a 
-                      href={getExplorerUrl(hash)!} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="ml-2 inline-flex items-center text-primary hover:underline"
-                    >
-                      View on Explorer <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
+                  {selectedCard.id === 'ai-card' ? 'AI Card minted successfully!' : 'Card minted successfully!'}
+                  {hash && (
+                    <>
+                      {selectedCard.id === 'ai-card' ? (
+                        // For AI cards, use Avalanche or Base explorer
+                        (() => {
+                          const aiNetwork: NetworkKey = (selectedNetwork === 'avalanche' || selectedNetwork === 'base') 
+                            ? selectedNetwork 
+                            : 'avalanche';
+                          const explorerUrl = getExplorerUrlForNetwork(hash, aiNetwork);
+                          return explorerUrl ? (
+                            <a 
+                              href={explorerUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="ml-2 inline-flex items-center text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
+                            >
+                              View on Explorer <ExternalLink className="h-3 w-3 ml-1" />
+                            </a>
+                          ) : null;
+                        })()
+                      ) : (
+                        getExplorerUrl(hash) && (
+                          <a 
+                            href={getExplorerUrl(hash)!} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="ml-2 inline-flex items-center text-primary hover:underline"
+                          >
+                            View on Explorer <ExternalLink className="h-3 w-3 ml-1" />
+                          </a>
+                        )
+                      )}
+                    </>
                   )}
                 </AlertDescription>
               </Alert>
@@ -1162,35 +1546,43 @@ export default function CreateCard() {
                           setCurrentStep(3);
                           handleMint();
                         }}
-                        disabled={isPending || isConfirming || !recipient || !customMessage.trim()}
+                        disabled={isPending || isConfirming || isMintingNFT || !recipient || !customMessage.trim() || (selectedCard.id === 'ai-card' && !generatedImageUrl && !imagePrompt.trim())}
                         className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary-hover text-white shadow-2xl hover:shadow-glow transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 rounded-2xl"
                       >
-                        {isPending || isConfirming ? (
+                        {isPending || isConfirming || isMintingNFT ? (
                           <>
                             <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                            {isPending ? 'Confirming Transaction...' : 'Minting Your Card...'}
+                            {isMintingNFT ? 'Generating & Minting NFT...' : isPending ? 'Confirming Transaction...' : 'Minting Your Card...'}
                           </>
                         ) : (
                           <>
                             <Send className="h-6 w-6 mr-3" />
-                            {cardType === 'premium' ? 'Mint & Send Premium Card' : 'Send Free Greeting Card'}
+                            {selectedCard.id === 'ai-card' 
+                              ? 'Generate & Mint AI Card' 
+                              : 'Send Free Greeting Card'}
                             <ArrowRight className="h-5 w-5 ml-3" />
                           </>
                         )}
                       </Button>
                       
-                      <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="p-4 bg-muted/30 rounded-2xl">
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Network</div>
-                          <div className="text-primary font-semibold">{NETWORKS[selectedNetwork].name}</div>
-                        </div>
-                        <div className="p-4 bg-muted/30 rounded-2xl">
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Fee</div>
-                          <div className="text-primary font-semibold">
-                            {isLoadingFee ? 'Loading...' : mintFee && typeof mintFee === 'bigint' ? `${formatEther(mintFee)} ${NETWORKS[selectedNetwork].currency}` : 'Free'}
+                      {selectedCard.id !== 'ai-card' && (
+                        <div className="grid grid-cols-2 gap-4 text-center">
+                          <div className="p-4 bg-muted/30 rounded-2xl">
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Network</div>
+                            <div className="text-primary font-semibold">{NETWORKS[selectedNetwork].name}</div>
                           </div>
                         </div>
-                      </div>
+                      )}
+                      {selectedCard.id === 'ai-card' && (
+                        <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 text-center">
+                          <div className="text-sm font-medium text-muted-foreground mb-1">Network</div>
+                          <div className="text-indigo-600 font-semibold">
+                            {selectedNetwork === 'avalanche' || selectedNetwork === 'base' 
+                              ? NETWORKS[selectedNetwork].name
+                              : 'Avalanche (default)'}
+                          </div>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>
